@@ -1,8 +1,10 @@
-from Tkinter import *
-import ttk
-import itertools
-import tkMessageBox
-import tkFont
+from tkinter import *
+from tkinter import ttk
+# import itertools
+from tkinter import messagebox
+from tkinter import font
+from tkinter import Menu
+from tkinter import messagebox
 
 class WelcomeScreen:
     def __init__(self, controller):
@@ -11,9 +13,9 @@ class WelcomeScreen:
         self.ipAddress2 = None
         self.welcomescreen = None
 
-# Dialog box for connection error
+    # Dialog box for connection error
     def connectionError(self):
-        tkMessageBox.showerror(title = "Clue-Less Message:  Connection Error", message = "Sorry, Clue-Less could not connect to <<IP>>.  Please check the IP address port and try again")
+        messagebox.showerror(title="Clue-Less Message: Connection Error", message="Sorry, Clue-Less could not connect to <<IP>>. Please check the IP address port and try again")
         return
 
     def startGame(self):
@@ -40,19 +42,10 @@ class WelcomeScreen:
         #---------------------------------------------------------------------------
         self.welcomescreen = Tk()
 
-        Grid.rowconfigure(self.welcomescreen, 0, weight = 1)
-        Grid.columnconfigure(self.welcomescreen, 0, weight = 1)
-
-
-        #---------------------------------------------------------------------------
-                                        #Font
-        customFont = tkFont.Font(family = "Helvetica", size=20, weight = 'bold', slant = 'italic', )
-        customFont1 = tkFont.Font(family = "Helvetica", size=14, weight = 'bold')
-        customFont2 = tkFont.Font(family = "Helvetica", size=12, weight = 'bold')
-        #---------------------------------------------------------------------------
-                                        #MenuBar
-
-
+        import tkinter.font as tkFont
+        customFont = tkFont.Font(family="Helvetica", size=20, weight='bold', slant='italic')
+        customFont1 = tkFont.Font(family="Helvetica", size=14, weight='bold')
+        customFont2 = tkFont.Font(family="Helvetica", size=12, weight='bold')
         menubar = Menu(self.welcomescreen)
         filemenu = Menu(menubar, tearoff = 0)
         filemenu.add_command(label = "Start New Game", command = self.startGame)

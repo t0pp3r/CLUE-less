@@ -1,11 +1,13 @@
-from Tkinter import *
-import ttk
-import itertools
-import tkMessageBox
-import tkFont
+from tkinter import *
+from tkinter import ttk
+# import itertools
+from tkinter import messagebox
+from tkinter import font
 import os,sys
 sys.path.insert(1, os.path.join(sys.path[0], '..'))
 from Constants import *
+from tkinter import font as tkFont
+from tkinter import messagebox
 
 class SelectCharScreen:
     def __init__(self, controller):
@@ -16,7 +18,7 @@ class SelectCharScreen:
         self.enterNameEntry = None
 
     def connectionError(self):
-        tkMessageBox.showerror(title = "Clue-Less Message:  Connection Error", message = "Sorry, Clue-Less could not connect to <<IP>>.  Please check the IP address port and try again")
+        messagebox.showerror(title="Clue-Less Message:  Connection Error", message="Sorry, Clue-Less could not connect to <<IP>>.  Please check the IP address port and try again")
         return
 
     def startGame(self):
@@ -32,10 +34,10 @@ class SelectCharScreen:
             self.controller.addPlayer(self.enterNameEntry.get(), char)
             self.selectcharscreen.destroy()
         elif self.enterNameEntry.get() == "":
-            tkMessageBox.showerror(title = "Clue-Less Message:  Error", message = "Please enter your name in the text box.")
+            messagebox.showerror(title="Clue-Less Message:  Error", message="Please enter your name in the text box.")
         else:
-            tkMessageBox.showerror(title = "Clue-Less Message:  Error", message = "Sorry, %s has already been selected. Please choose again." % char)
-        print "button"
+            messagebox.showerror(title="Clue-Less Message:  Error", message="Sorry, %s has already been selected. Please choose again." % char)
+        print("button")
         
 
     def initScreen(self):

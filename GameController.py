@@ -1,9 +1,10 @@
+from typing import *
 from Constants import *
 from Components.Card import *
 from Components.BoardPiece import *
 from Components.Player import *
 from Server import *
-from GUI.GUI import *
+from UI.GUI import *
 from twisted.internet import reactor, tksupport
 from twisted.internet.task import LoopingCall
 from multiprocessing import Process
@@ -13,35 +14,21 @@ import random
 import sys, os
 
 class GameController:
-	def __init__(self, cards, pieces, players):
-		self.cards = cards
-		self.pieces = pieces
-		self.players = players
-		self.availableChars = NAMES.keys()
-		self.player = None
-		self.character = None
-		self.yourTurn = False
-		self.canMove = False
-		self.host = False
-		self.connectionIP = None
-		self.suggestedPlayer = None
+        def __init__(self, cards, pieces, players):
+                self.cards = cards
+                self.pieces = pieces
+                self.players = players
+                self.availableChars = NAMES.keys()
+                self.player = None
+                self.character = None
+                self.yourTurn = False
+                self.canMove = False
+                self.host = False
+                self.connectionIP = None
+                self.suggestedPlayer = None
                 self.suggestedWeapon = None
                 self.suggestedRoom = None
-                self.gui = None
-                self.accusedPlayer = None
-                self.accusedWeapon = None
-                self.accusedRoom = None
-                self.client = None
-                self.gameStarted = False
-                self.gameOver = False
-                self.currPlayerTurn = None
-                self.currSuggester = None
-                self.playerRotation = None
-                self.murderWeapon = None
-                self.murderChar = None
-                self.murderRoom = None
-		
-	def startGame(self):
+        def startGame(self):
                 self.gui = GUI(self)
                 self.gui.launchWelcomeScreen()
                 self.gui.launchSelectCharScreen()
@@ -100,148 +87,145 @@ class GameController:
                         self.yourTurn = True
                         self.canMove = True
                 self.gui.updatePlayerInfoBox()
-                
-                
-	
-	def handleListenerInput(self, message):
-                print "Message: %s" % message
-                message_dict = XML.parseData(message)
-                description = message_dict[DESCRIPTION_TAG]
-                if description == MAKE_SUGGESTION:
-                        name = message_dict[PLAYER_TAG]
-                        self.suggestedRoom = message_dict[ROOM_TAG]
-                        self.suggestedPlayer = message_dict[CHARACTER_TAG]
-                        self.suggestedWeapon = message_dict[WEAPON_TAG]
-                        up = "%s suggested:\n%s\n%s\n%s" % (name,self.suggestedRoom,self.suggestedPlayer,self.suggestedWeapon)
-                        self.gui.updateNotificationBox(up)
-                        now = self.getNextPlayer(name)
-                        self.currSuggester = now
-                        if now == self.player:
-                                self.gui.launchDisproveSuggestionScreen()
-                elif description == MOVE_PLAYER:
-                        name = message_dict[PLAYER_TAG]
-                        loc = message_dict[ROOM_TAG]
-                        self.movePlayer(name, loc)
-                        self.gui.updateGameBoard()
-                        up = "%s moved to:\n  %s" % (name,loc)
-                        self.gui.updateNotificationBox(up)
-                elif description == MAKE_CORRECT_ACCUSATION:
-                        player = message_dict[PLAYER_TAG]
-                        weapon = message_dict[WEAPON_TAG]
-                        room = message_dict[ROOM_TAG]
-                        char = message_dict[CHARACTER_TAG]
-                        self.gui.launchGameOverScreen(player, char, room, weapon)
-                        sys.exit()
-                        os._exit(1)
-                elif description == MAKE_WRONG_ACCUSATION:
-                        player = message_dict[PLAYER_TAG]
-                        weapon = message_dict[WEAPON_TAG]
-                        room = message_dict[ROOM_TAG]
-                        char = message_dict[CHARACTER_TAG]
-                        self.gui.launchOtherWrongAccusationScreen(player, char, room, weapon)
-                        
-                        self.currPlayerTurn = self.getNextPlayer(player)
-                        self.removePlayerFromGame(player)
+
+def handleListenerInput(self, message):
+        print ("Message: %s") % message
+        message_dict = XML.parseData(message)
+        description = message_dict[DESCRIPTION_TAG]
+        if description == MAKE_SUGGESTION:
+                name = message_dict[PLAYER_TAG]
+                self.suggestedRoom = message_dict[ROOM_TAG]
+                self.suggestedPlayer = message_dict[CHARACTER_TAG]
+                self.suggestedWeapon = message_dict[WEAPON_TAG]
+                up = "%s suggested:\n%s\n%s\n%s" % (name,self.suggestedRoom,self.suggestedPlayer,self.suggestedWeapon)
+                self.gui.updateNotificationBox(up)
+                now = self.getNextPlayer(name)
+                self.currSuggester = now
+                if now == self.player:
+                        self.gui.launchDisproveSuggestionScreen()
+        elif description == MOVE_PLAYER:
+                name = message_dict[PLAYER_TAG]
+                loc = message_dict[ROOM_TAG]
+                self.movePlayer(name, loc)
+                self.gui.updateGameBoard()
+                up = "%s moved to:\n  %s" % (name,loc)
+                self.gui.updateNotificationBox(up)
+        elif description == MAKE_CORRECT_ACCUSATION:
+                player = message_dict[PLAYER_TAG]
+                weapon = message_dict[WEAPON_TAG]
+                room = message_dict[ROOM_TAG]
+                char = message_dict[CHARACTER_TAG]
+                self.gui.launchGameOverScreen(player, char, room, weapon)
+                sys.exit()
+                os._exit(1)
+        elif description == MAKE_WRONG_ACCUSATION:
+                player = message_dict[PLAYER_TAG]
+                weapon = message_dict[WEAPON_TAG]
+                room = message_dict[ROOM_TAG]
+                char = message_dict[CHARACTER_TAG]
+                self.gui.launchOtherWrongAccusationScreen(player, char, room, weapon)               
+                self.currPlayerTurn = self.getNextPlayer(player)
+                self.removePlayerFromGame(player)
+                self.gui.updatePlayerInfoBox()
+                self.gui.updateGameBoard()
+                up = "%s is out of the game" % (player)
+                self.gui.updateNotificationBox(up)
+                if self.currPlayerTurn == self.player:
+                        self.yourTurn = True
+                        self.canMove = True
                         self.gui.updatePlayerInfoBox()
-                        self.gui.updateGameBoard()
-                        up = "%s is out of the game" % (player)
-                        self.gui.updateNotificationBox(up)
-                        if self.currPlayerTurn == self.player:
-                                self.yourTurn = True
-                                self.canMove = True
+                        self.gui.launchAccusationScreen()
+                        self.gui.launchMovePlayerScreen()
+                        if self.getLocationType(self.player) == ROOM:
+                                self.gui.launchSuggestionScreen()        
+                                self.sendSuggestionMessage()
+                        else:
+                                self.endTurn()
+                print ("Need to remove player from game")
+        elif description == SUGGESTION_DISPROVED:
+                if self.yourTurn:
+                        name = message_dict[PLAYER_TAG]
+                        c = message_dict[CHOICE_TAG]
+                        mess = "%s disproved your suggestion\nwith: %s" % (name, c)
+                        self.gui.updateSuggestionBox(mess)
+                        self.gui.launchAccusationScreen()
+                        if self.gameOver:
+                                print ("Manage game over")
+                        else:
                                 self.gui.updatePlayerInfoBox()
-                                self.gui.launchAccusationScreen()
+                                self.endTurn()
+        elif description == SUGGESTION_NOT_DISPROVED:
+                name = message_dict[PLAYER_TAG]
+                now = self.getNextPlayer(name)
+                self.currSuggester = now
+                up = "%s did not disprove\nthe suggestion" % (name)
+                self.gui.updateNotificationBox(up)
+                if now == self.player and self.yourTurn:
+                        self.endTurn()
+                elif now == self.player:
+                        self.gui.launchDisproveSuggestionScreen()
+        elif description == END_TURN:
+                name = message_dict[PLAYER_TAG]
+                self.currPlayerTurn = self.getNextPlayer(name)
+                self.gui.updatePlayerInfoBox()
+                self.gui.updateGameBoard()
+                up = "%s ended their turn" % (name)
+                self.gui.updateNotificationBox(up)
+                if self.currPlayerTurn == self.player:
+                        self.yourTurn = True
+                        self.canMove = True
+                        self.gui.updatePlayerInfoBox()
+                        self.gui.launchAccusationScreen()
+                        if self.gameOver:
+                                print ("Game Over!!!!")
+                        else:
                                 self.gui.launchMovePlayerScreen()
                                 if self.getLocationType(self.player) == ROOM:
                                         self.gui.launchSuggestionScreen()        
                                         self.sendSuggestionMessage()
                                 else:
                                         self.endTurn()
-                        print "Need to remove player from game"
-                elif description == SUGGESTION_DISPROVED:
-                        if self.yourTurn:
-                                name = message_dict[PLAYER_TAG]
-                                c = message_dict[CHOICE_TAG]
-                                mess = "%s disproved your suggestion\nwith: %s" % (name, c)
-                                self.gui.updateSuggestionBox(mess)
-                                self.gui.launchAccusationScreen()
-                                if self.gameOver:
-                                        print "Manage game over"
-                                else:
-                                        self.gui.updatePlayerInfoBox()
-                                        self.endTurn()
-                elif description == SUGGESTION_NOT_DISPROVED:
-                        name = message_dict[PLAYER_TAG]
-                        now = self.getNextPlayer(name)
-                        self.currSuggester = now
-                        up = "%s did not disprove\nthe suggestion" % (name)
-                        self.gui.updateNotificationBox(up)
-                        if now == self.player and self.yourTurn:
-                                self.endTurn()
-                        elif now == self.player:
-                                self.gui.launchDisproveSuggestionScreen()
-                elif description == END_TURN:
-                        name = message_dict[PLAYER_TAG]
-                        self.currPlayerTurn = self.getNextPlayer(name)
+        elif description == SEND_PLAYER_ORDER:
+                l = message_dict[CHOICE_TAG]
+                order = l.split(',')
+                self.playerRotation = order
+        elif description == SEND_PLAYER_CARDS:
+                name = message_dict[PLAYER_TAG]
+                if self.player == name:
+                        cards = message_dict[CHOICE_TAG]
+                        cardList = cards.split(',')
+                        self.getPlayer(self.player).cards = cardList
+        elif description == START_GAME:
+                self.gameStarted = True
+                self.gui.updatePlayerInfoBox()
+                up = "Game started!"
+                self.gui.updateNotificationBox(up)
+                if self.player == self.playerRotation[0]:
+                        self.yourTurn = True
+                        self.canMove = True
                         self.gui.updatePlayerInfoBox()
-                        self.gui.updateGameBoard()
-                        up = "%s ended their turn" % (name)
-                        self.gui.updateNotificationBox(up)
-                        if self.currPlayerTurn == self.player:
-                                self.yourTurn = True
-                                self.canMove = True
-                                self.gui.updatePlayerInfoBox()
-                                self.gui.launchAccusationScreen()
-                                if self.gameOver:
-                                        print "Game Over!!!!"
-                                else:
-                                        self.gui.launchMovePlayerScreen()
-                                        if self.getLocationType(self.player) == ROOM:
-                                                self.gui.launchSuggestionScreen()        
-                                                self.sendSuggestionMessage()
-                                        else:
-                                                self.endTurn()
-                elif description == SEND_PLAYER_ORDER:
-                        l = message_dict[CHOICE_TAG]
-                        order = l.split(',')
-                        self.playerRotation = order
-                elif description == SEND_PLAYER_CARDS:
-                        name = message_dict[PLAYER_TAG]
-                        if self.player == name:
-                                cards = message_dict[CHOICE_TAG]
-                                cardList = cards.split(',')
-                                self.getPlayer(self.player).cards = cardList
-                elif description == START_GAME:
-                        self.gameStarted = True
-                        self.gui.updatePlayerInfoBox()
-                        up = "Game started!"
-                        self.gui.updateNotificationBox(up)
-                        if self.player == self.playerRotation[0]:
-                                self.yourTurn = True
-                                self.canMove = True
-                                self.gui.updatePlayerInfoBox()
-                                self.gui.launchAccusationScreen()
-                                self.gui.launchMovePlayerScreen()
-                elif description == SEND_MURDER_CARDS:
-                        self.murderChar = message_dict[CHARACTER_TAG]
-                        self.murderRoom = message_dict[ROOM_TAG]
-                        self.murderWeapon = message_dict[WEAPON_TAG]
-                elif description == JOIN_GAME:
-                        name = message_dict[PLAYER_TAG]
-                        char = message_dict[CHARACTER_TAG]
-                        up = "%s joined game\nas %s" % (name,char)
-                        self.gui.updateNotificationBox(up)
-                        if self.getPlayer(name) == None:
-                                self.addPlayer(name, char)
-                                self.sendJoinGameMessage()
-                        self.gui.updateGameBoard()
-                else:
-                        print "WHY input not correct?!?!"                        
-                        
-                #print "handleListenerInput"
-                #print message
-                #self.client.protocol.sendMessage("From %s" % self.player)
-		# Update
+                        self.gui.launchAccusationScreen()
+                        self.gui.launchMovePlayerScreen()
+        elif description == SEND_MURDER_CARDS:
+                self.murderChar = message_dict[CHARACTER_TAG]
+                self.murderRoom = message_dict[ROOM_TAG]
+                self.murderWeapon = message_dict[WEAPON_TAG]
+        elif description == JOIN_GAME:
+                name = message_dict[PLAYER_TAG]
+                char = message_dict[CHARACTER_TAG]
+                up = "%s joined game\nas %s" % (name,char)
+                self.gui.updateNotificationBox(up)
+                if self.getPlayer(name) == None:
+                        self.addPlayer(name, char)
+                        self.sendJoinGameMessage()
+                self.gui.updateGameBoard()
+        else:
+                print ("WHY input not correct?!?!")                        
+                
+        #print "handleListenerInput"
+        #print message
+        #self.client.protocol.sendMessage("From %s" % self.player)
+        # Update
 
         def endTurn(self):
                 self.currPlayerTurn = self.getNextPlayer(self.player)
@@ -299,7 +283,7 @@ class GameController:
                 message = XML.formatData(END_TURN, player = self.player)
                 self.sendUpdate(message)
 
-	def sendSuggestionMessage(self):
+        def sendSuggestionMessage(self):
                 message = XML.formatData(MAKE_SUGGESTION, player = self.player, room = self.suggestedRoom,
                                          character = self.suggestedPlayer, weapon = self.suggestedWeapon)
                 self.sendUpdate(message)
@@ -326,24 +310,24 @@ class GameController:
                                          weapon = self.accusedWeapon, room = self.accusedRoom)
                 self.sendUpdate(message)
                 
-	def sendUpdate(self, message):
-                self.client.protocol.sendMessage(message)
-	
-	def initClient(self):
-                #host = "127.0.0.1"
-                #lc = LoopingCall(self.updateBoard)
-                #lc.start(1)
-                #tksupport.install(widget)
-                print "Init Client!"
-                self.client = Client_Factory(self)
-                print "Client: " + str(self.client)
-                reactor.connectTCP(self.connectionIP, PORT_SERVER, self.client)
-                reactor.run()
-                #self.runServer()
-                print "initialized client"
+def sendUpdate(self, message):
+        self.client.protocol.sendMessage(message)
+
+def initClient(self):
+        #host = "127.0.0.1"
+        #lc = LoopingCall(self.updateBoard)
+        #lc.start(1)
+        #tksupport.install(widget)
+        print ("Init Client!")
+        self.client = Client_Factory(self)
+        print ("Client: ") + str(self.client)
+        reactor.connectTCP(self.connectionIP, PORT_SERVER, self.client)
+        reactor.run()
+        #self.runServer()
+        print ("initialized client")
 
         def updateBoard(self):
-                print "Update Board"
+                print ("Update Board")
 
         def initServer(self):
                 #tksupport.install(widget)
@@ -370,58 +354,58 @@ class GameController:
 	# Params:
 	#	name -> String of player's name
 	#	location -> String of location name
-	def movePlayer(self, name, location):
-		# Update location of player within player object
-		for player in self.players:
-			if player.name == name:
-				old_location = player.location
-				player.location = location
-				#print "New player location: %s" % player.location
-		# Update players at specific locations after move
-		for piece in self.pieces:
-			if piece.name == location:
-				piece.addPlayer(name)
-			elif piece.name == old_location:
-				piece.removePlayer(name)
+def movePlayer(self, name, location):
+        # Update location of player within player object
+        for player in self.players:
+                if player.name == name:
+                        old_location = player.location
+                        player.location = location
+                        #print "New player location: %s" % player.location
+        # Update players at specific locations after move
+        for piece in self.pieces:
+                if piece.name == location:
+                        piece.addPlayer(name)
+                elif piece.name == old_location:
+                        piece.removePlayer(name)
 				
 	# Get piece associated with piece name passed in
-	def getPiece(self, name):
-		for piece in self.pieces:
-			if piece.name == name:
-                                #print "getPiece: %s" % piece.name
-				return piece
-	
-	# Get card associated with card name passed in
-	def getCard(self, name):
-		for card in self.cards:
-			if card.label == name:
-				return card
-	
-	# Get player associated with player name passed in
-	def getPlayer(self, name):
-		for player in self.players:
-			if player.name == name:
-				return player
-		return None
-	
-	def getAdjacentPieces(self, location):
-		piece = self.getPiece(location)
-		print "Loc: %s, Piece: %s" % (location, piece.name)
-		return piece.getAdjacentSpots()
-		
-	def getPlayersAtLocation(self, location):
-		piece = self.getPiece(location)
-		return piece.players
-	
-	# Pass in the name of a location
-	def getPlayerNamesAtLocation(self, location):
-		players = self.getPlayersAtLocation(location)
-		names = []
-		for player in players:
-			names.append(player.name)
+def getPiece(self, name):
+        for piece in self.pieces:
+                if piece.name == name:
+                        #print "getPiece: %s" % piece.name
+                        return piece
 
-	# Get location of player given name
-	def getPlayerLocation(self, name):
+# Get card associated with card name passed in
+def getCard(self, name):
+        for card in self.cards:
+                if card.label == name:
+                        return card
+
+        # Get player associated with player name passed in
+        def getPlayer(self, name):
+                for player in self.players:
+                        if player.name == name:
+                                return player
+                return None
+
+        def getAdjacentPieces(self, location):
+                piece = self.getPiece(location)
+                print("Loc: %s, Piece: %s") % (location, piece.name)
+                return piece.getAdjacentSpots()
+
+        def getPlayersAtLocation(self, location):
+                piece = self.getPiece(location)
+                return piece.players
+
+        # Pass in the name of a location
+        def getPlayerNamesAtLocation(self, location):
+                players = self.getPlayersAtLocation(location)
+                names = []
+                for player in players:
+                        names.append(player.name)
+
+        # Get location of player given name
+        def getPlayerLocation(self, name):
                 player = self.getPlayer(name)
                 return player.location
 
@@ -431,53 +415,54 @@ class GameController:
 			
 	# Pass in the name of a player
 	# Return list of piece names (strings) that are valid
-	def getValidLocationsToMoveTo(self, name):
-		player = self.getPlayer(name)
-		location = self.getPlayerLocation(self.player)
-		print "Player location: %s" % location
-		pieces = self.getAdjacentPieces(location)
-		print "Valid pieces: %s" % str(pieces)
-		valid_spots = []
-		for p in pieces:
-                        piece = self.getPiece(p)
-                        print "Adj: %s" % piece.name
-			players = piece.players
-			if len(players) == 0:
-				valid_spots.append(piece.name)
-			elif piece.type == ROOM:
-				valid_spots.append(piece.name)
-		return valid_spots
-		
-	# Check off any cards on the player notecard passed in here
-	def updateNotecard(self, character=None, location=None, card=None):
-		if character != None:
-			self.player.notebook.append(getCard(character))
-		if location != None:
-			self.player.notebook.append(getCard(location))
-		if card != None:
-			self.player.notebook.append(getCard(card))
+def getValidLocationsToMoveTo(self, name):
+        player = self.getPlayer(name)
+        location = self.getPlayerLocation(self.player)
+        print ("Player location: %s") % location
+        pieces = self.getAdjacentPieces(location)
+        print ("Valid pieces: %s") % str(pieces)
+        valid_spots = []
+        for p in pieces:
+                piece = self.getPiece(p)
+                print("Adj: %s") % piece.name
+                players = piece.players
+                if len(players) == 0:
+                        valid_spots.append(piece.name)
+                elif piece.type == ROOM:
+                        valid_spots.append(piece.name)
+        return valid_spots
 
-	# Check if a character is available to play with
-	def isCharAvailable(self, name):
+        # Check off any cards on the player notecard passed in here
+def updateNotecard(self, character=None, location=None, card=None):
+                if character != None:
+                        self.player.notebook.append(getCard(character))
+                if location != None:
+        
+                        self.player.notebook.append(getCard(location))
+                if card != None:
+                        self.player.notebook.append(getCard(card))
+
+        # Check if a character is available to play with
+def isCharAvailable(self, name):
                 for i in self.availableChars:
                         if name == i:
                                 return True
                 return False
 
 	# Get a formatted string containing the player's name and character
-	def getPlayerInfo(self):
-                info = "Your Name: %s\n" % self.player
-                info += "Character: %s\n" % self.character
-                info += "Location: %s\n" % self.getPlayerLocation(self.player)
-                info += "Cards: "
-                if self.getPlayer(self.player).cards != None:
-                        for card in self.getPlayer(self.player).cards:
-                                info += card + " "
-                info += "\nYour Turn = %s" % str(self.yourTurn)
-                return info
+def getPlayerInfo(self):
+        info = "Your Name: %s\n" % self.player
+        info += "Character: %s\n" % self.character
+        info += "Location: %s\n" % self.getPlayerLocation(self.player)
+        info += "Cards: "
+        if self.getPlayer(self.player).cards != None:
+                for card in self.getPlayer(self.player).cards:
+                        info += card + " "
+        info += "\nYour Turn = %s" % str(self.yourTurn)
+        return info
 
         # Get formatted text for a board piece
-        def getBoardPieceText(self, name):
+def getBoardPieceText(self, name):
                 text = ""
                 piece = self.getPiece(name)
                 if piece.secret == None:
@@ -490,13 +475,19 @@ class GameController:
                 return text
 
         # Register a suggestion from the user
-        def registerSuggestion(self, suspect, weapon, room):
+def registerSuggestion(self, suspect, weapon, room):
                 self.suggestedPlayer = suspect
                 self.suggestedWeapon = weapon
+
+
+
+
+
+
                 self.suggestedRoom = room
 
         # Register a accusation from the user
-        def handleAccusation(self, suspect, weapon, room):
+def handleAccusation(self, suspect, weapon, room):
                 self.accusedPlayer = suspect
                 self.accusedWeapon = weapon
                 self.accusedRoom = room
@@ -510,31 +501,39 @@ class GameController:
                                                              self.murderChar, self.murderRoom, self.murderWeapon)
                 #print "Destroy!"
                 #self.gui.gameScreen.gamescreen.destroy()
-                print "System exit!"
+                print ("System exit!")
                 sys.exit()
                 #os._exit(1)
                 #print "Raise"
                 #raise SystemExit
 
         # Helper function to get all character names
-        def getAllCharacterNames(self):
+def getAllCharacterNames(self):
                 return NAMES.keys()
 
         # Helper function to get all weapon names
-        def getAllWeaponNames(self):
+def getAllWeaponNames(self):
                 return CARDS[WEAPON]
 
         # Helper function to get all room names
-        def getAllRoomNames(self):
+
+
+
+
+
+
+
+
+def getAllRoomNames(self):
                 return CARDS[ROOM]
 
         # Get cards in client players hand
-        def getYourCards(self):
+def getYourCards(self):
                 player = self.getPlayer(self.player)
                 return player.cards
 
         # Get board piece type
-        def getLocationType(self, player):
+def getLocationType(self, player):
                 loc = self.getPlayerLocation(player)
                 if "Hallway" in loc:
                         return HALLWAY
@@ -542,7 +541,7 @@ class GameController:
                         return ROOM
 
         # Remove player from game
-        def removePlayerFromGame(self, name):
+def removePlayerFromGame(self, name):
                 player = self.getPlayer(name)
                 loc = player.location
                 piece = self.getPiece(loc)

@@ -1,12 +1,12 @@
-from Tkinter import *
-import ttk
-from welcomeScreen import *
-from selectCharScreen import *
-from gameScreen import *
-from suggestion import *
-from accusation import *
-from movePlayerScreen import *
-from canYouDisproveSugg import *
+from tkinter import *
+from tkinter import ttk
+from UI.welcomeScreen import *
+from UI.selectCharScreen import *
+from UI.gameScreen import *
+from UI.suggestion import *
+from UI.accusation import *
+from UI.movePlayerScreen import *
+from UI.canYouDisproveSugg import *
 
 
 class GUI:

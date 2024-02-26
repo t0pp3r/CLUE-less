@@ -41,7 +41,7 @@ def formatData(description, player=None, room=None, character=None,
 	return ET.tostring(message)
 
 def main():
-        print formatData("description", "player","room",choice="True")
+        print (formatData("description", "player","room",choice="True"))
 
 if __name__ == "__main__":
         main()

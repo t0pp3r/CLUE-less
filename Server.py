@@ -18,7 +18,7 @@ class Server(LineReceiver):
         #self.sendLine("What's your name?")
 
     def connectionLost(self, reason):
-        print "connection lost"
+        print("connection lost")
         #if self.users.contains(self):
         #    del self.users[self.name]
             

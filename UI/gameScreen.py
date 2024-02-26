@@ -1,8 +1,8 @@
-from Tkinter import *
-import ttk
-import itertools
-import tkMessageBox
-import tkFont
+from tkinter import *
+from tkinter import ttk
+# import itertools
+from tkinter import messagebox
+from tkinter import font
 import os,sys
 sys.path.insert(1, os.path.join(sys.path[0], '..'))
 from Constants import *
@@ -119,9 +119,9 @@ class GameScreen:
         #self.controller.gui.launchSuggestionScreen()
         #self.controller.gui.launchMovePlayerScreen()
         #self.controller.gui.launchAccusationScreen()
-        print "We're back!"
+        print ("We're back!")
         self.updateBoardPieces()
-        print name
+        print (name)
 
     def initClientButtonPressed(self):
         if self.controller.client == None:
@@ -134,7 +134,7 @@ class GameScreen:
         self.controller.launchGame()
 
     def updateBoardPieces(self):
-        print "Starting update!"
+        print ("Starting update!")
         self.btn1["text"] = self.controller.getBoardPieceText(PROFESSOR_PLUM)
         self.btn2["text"] = self.controller.getBoardPieceText(MRS_PEACOCK)
         self.btn3["text"] = self.controller.getBoardPieceText(STUDY)
@@ -162,7 +162,7 @@ class GameScreen:
         self.btn25["text"] = self.controller.getBoardPieceText(H12)
         self.btn26["text"] = self.controller.getBoardPieceText(KITCHEN)
         self.btn27["text"] = self.controller.getBoardPieceText(COLONEL_MUSTARD)
-        print "Finished update!"
+        print ("Finished update!")
 
         
 

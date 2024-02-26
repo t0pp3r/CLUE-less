@@ -102,10 +102,10 @@ def main():
         players = []
         
         gameController = GameController(cards, board, players)
-        print "Initialized GameController"
-        print "Starting game!"
+        print ("Initialized GameController")
+        print ("Starting game!")
         gameController.startGame()
-        print "Closing game"
+        print ("Closing game")
 
 if __name__ == "__main__":
         main()

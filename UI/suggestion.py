@@ -1,8 +1,8 @@
-from Tkinter import *
-import ttk
-import itertools
-import tkMessageBox
-import tkFont
+from tkinter import *
+from tkinter import ttk
+# import itertools
+from tkinter import messagebox
+from tkinter import font
 
 class SuggestionScreen:
     def __init__(self, controller):
